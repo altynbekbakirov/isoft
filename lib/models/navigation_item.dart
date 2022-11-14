@@ -1,0 +1,20 @@
+enum NavigationItem {
+  home,
+  products,
+  accounts,
+  sales,
+  sales_orders,
+  sales_invoices,
+  sales_returns,
+  purchases,
+  purchases_orders,
+  purchases_invoices,
+  warehouse,
+  product_transactions,
+  inventory,
+  open_slips,
+  scrap_slips,
+  finance,
+  safe_transactions,
+  settings
+}
