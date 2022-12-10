@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/account_provider.dart';
+import 'package:isoft/data/currency_provider.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/data/ware_provider.dart';
 import 'package:isoft/models/account_model.dart';
-import 'package:isoft/models/product_model.dart';
+import 'package:isoft/models/cart_model.dart';
 import 'package:isoft/screens/currency_screen.dart';
+import 'package:isoft/screens/product_screen.dart';
 import 'package:isoft/screens/products_screen.dart';
 import 'package:isoft/screens/accounts_screen.dart';
 import 'package:isoft/screens/warehouse_screen.dart';
+import 'package:provider/provider.dart';
 
 class SalesInvoicesPage extends StatefulWidget {
   const SalesInvoicesPage({Key? key}) : super(key: key);
@@ -100,7 +105,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   final formPaymentKey = GlobalKey<FormState>();
   final formKey = GlobalKey<FormState>();
 
-  List<ProductModel> items = [];
+  List<Cart> items = [];
   double invoiceTotal = 0.00, discount = 0.00, expenses = 0.00;
 
   @override
@@ -119,6 +124,21 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     super.initState();
     discountController.selection = TextSelection(
         baseOffset: 0, extentOffset: discountController.text.length);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setInitialData();
+  }
+
+  Future setInitialData() async {
+    currencyController.text =
+        '${context.watch<CurrencyProvider>().activeCurrency.curCode} - ${context.watch<CurrencyProvider>().activeCurrency.curName}';
+    wareController.text =
+        '${context.watch<WareProvider>().getActiveWare.id} - ${context.watch<WareProvider>().getActiveWare.name}';
+    accountController.text =
+        '${context.watch<AccountProvider>().activeAccount.code} - ${context.watch<AccountProvider>().activeAccount.name}';
   }
 
   @override
@@ -225,6 +245,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: accountController,
+                      textInputAction: TextInputAction.next,
                       minLines: 1,
                       maxLines: 3,
                       onTap: () {
@@ -233,7 +254,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 builder: (context) => AccountsScreen()))
                             .then((value) {
                           if (value != null) {
-                            AccountModel account = value["account"];
+                            Account account = value["account"];
                             accountController.text =
                                 "${account.code} - ${account.name}";
                             formAccountKey.currentState!.validate();
@@ -313,7 +334,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     );
   }
 
-  Widget buildProductsItem({required List<ProductModel> items}) {
+  Widget buildProductsItem({required List<Cart> items}) {
     return ListView.builder(
       itemCount: items.length,
       scrollDirection: Axis.vertical,
@@ -382,7 +403,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             onPressed: () async {
               Navigator.of(context)
                   .push(MaterialPageRoute(
-                      builder: (context) => ProductsScreen(
+                      builder: (context) => ProductScreen(
                             items: items,
                           )))
                   .then((value) {
@@ -415,6 +436,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           flex: 6,
           child: TextFormField(
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
             controller: discountController,
             style: const TextStyle(fontSize: 14),
             onChanged: (value) {
@@ -461,6 +483,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           flex: 6,
           child: TextFormField(
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
             controller: expensesController,
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
@@ -572,7 +595,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     flex: 6,
                     child: TextFormField(
                       controller: sumController,
-                      onTap: () {},
+                      textInputAction: TextInputAction.done,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
@@ -702,16 +725,16 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     );
   }
 
-  void calculateTotal({required List<ProductModel> items}) {
+  void calculateTotal({required List<Cart> items}) {
     invoiceTotal = 0;
-    for (ProductModel product in items) {
+    for (Cart product in items) {
       setState(() {
         invoiceTotal += product.count * product.price;
       });
     }
   }
 
-  void showProductDialog(ProductModel item) {
+  void showProductDialog(Cart item) {
     productPriceController.text = item.newPrice > 0
         ? item.newPrice.toStringAsFixed(2)
         : item.price.toStringAsFixed(2);
@@ -767,7 +790,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   ),
                   TextFormField(
                     readOnly: true,
-                    initialValue: item.remain.toStringAsFixed(0),
+                    initialValue: '0',
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
                         isDense: true,

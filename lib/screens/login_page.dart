@@ -1,7 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:isoft/data/shared_prefs.dart';
 import 'package:isoft/screens/home_page.dart';
-import '../l10n/language_constants.dart';
 import '../main.dart';
 
 class LoginPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    getLocale().then((value) {
+    getSharedLocale().then((value) {
       setState(() {
         currentLanguage = Language.languageList()
             .where((element) => element.languageCode == value.languageCode)
@@ -74,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
       autofocus: true,
       maxLength: 30,
       controller: emailController,
+      textInputAction: TextInputAction.next,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.mail_outline_outlined),
         labelText: translation(context).email,
@@ -108,6 +109,7 @@ class _LoginPageState extends State<LoginPage> {
       maxLength: 15,
       obscureText: isPasswordVisible,
       controller: passwordController,
+      textInputAction: TextInputAction.done,
       validator: (value) {
         if (value!.isEmpty || value.length < 6) {
           return translation(context).enter_password;
@@ -189,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             currentLanguage = language;
           });
-          Locale locale = await setLocale(language.languageCode);
+          Locale locale = await setSharedLocale(language.languageCode);
           MyApp.setLocale(context, locale);
         }
       },

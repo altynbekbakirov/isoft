@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
-import 'package:isoft/models/product_model.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/models/cart_model.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({Key? key, this.items}) : super(key: key);
-  final List<ProductModel>? items;
+  final List<Cart>? items;
 
   @override
   State<ProductsScreen> createState() => _ProductsScreenState();
@@ -18,49 +16,44 @@ class _ProductsScreenState extends State<ProductsScreen> {
   final productCountController = TextEditingController();
   final productPriceController = TextEditingController();
 
-  List<ProductModel> productList = [
-    ProductModel(
+  List<Cart> productList = [
+    Cart(
         id: 1,
         code: '100.001',
         name: 'СОРОЧКИ трикотаж/шелк',
-        remain: 5,
         price: 5.5),
-    ProductModel(
+    Cart(
         id: 2,
         code: '100.002',
         name: 'Милана штапель/тенсел',
-        remain: 20,
         price: 35),
-    ProductModel(
-        id: 3, code: '100.003', name: 'Сара вельвет', remain: 0, price: 9),
-    ProductModel(
-        id: 4, code: '100.004', name: 'Намазник Капюшон', remain: 2, price: 4),
-    ProductModel(
+    Cart(
+        id: 3, code: '100.003', name: 'Сара вельвет', price: 9),
+    Cart(
+        id: 4, code: '100.004', name: 'Намазник Капюшон',price: 4),
+    Cart(
         id: 5,
         code: '100.005',
         name: 'Джинс Руб-Карман',
-        remain: 65,
         price: 15),
-    ProductModel(
-        id: 6, code: '100.006', name: 'Аманиса Шерсть', remain: 3, price: 46),
-    ProductModel(
-        id: 7, code: '100.007', name: 'Венера Вельвет', remain: 20, price: 5),
-    ProductModel(
+    Cart(
+        id: 6, code: '100.006', name: 'Аманиса Шерсть', price: 46),
+    Cart(
+        id: 7, code: '100.007', name: 'Венера Вельвет', price: 5),
+    Cart(
         id: 8,
         code: '100.008',
         name: 'Екатерина Болдышева и группа Мираж - Море грёз',
-        remain: 23,
         price: 20),
-    ProductModel(
+    Cart(
         id: 9,
         code: '100.009',
         name:
             'Была на ее концерте.Стояла у самой сцены,и не могла отвести от нее глаз. Завораживает как Сирена.',
-        remain: 5,
         price: 10),
   ];
 
-  List<ProductModel> itemsSelected = [];
+  List<Cart> itemsSelected = [];
 
   @override
   void initState() {
@@ -99,7 +92,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
           actions: [
             IconButton(
                 onPressed: () {
-                  showSearch(context: context, delegate: CustomSearch());
                 },
                 icon: const Icon(Icons.search_outlined)),
             IconButton(
@@ -120,7 +112,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
-  Widget buildCard({required ProductModel item, Color color = Colors.white}) {
+  Widget buildCard({required Cart item, Color color = Colors.white}) {
     return Card(
         color: color,
         child: ListTile(
@@ -163,7 +155,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ));
   }
 
-  void showProductDialog(ProductModel item) {
+  void showProductDialog(Cart item) {
     productPriceController.text = item.newPrice > 0
         ? item.newPrice.toStringAsFixed(2)
         : item.price.toStringAsFixed(2);
@@ -221,19 +213,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   ),
                   TextFormField(
                     readOnly: true,
-                    initialValue: item.remain.toStringAsFixed(0),
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.bookmark_border),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),
-                        labelText: translation(context).product_remain,
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color:
-                                  item.remain > 0 ? Colors.blue : Colors.red),
-                        )),
+                        labelText: translation(context).product_remain,),
                   ),
                   const SizedBox(
                     height: 12,
@@ -327,8 +313,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
             actions: <Widget>[
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).errorColor),
                 child: Text(translation(context).cancel),
                 onPressed: () {
                   Navigator.of(dialogContext).pop(); // Dismiss alert dialog
@@ -351,7 +335,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       }
                     });
                     itemsSelected.clear();
-                    for (ProductModel product in productList) {
+                    for (Cart product in productList) {
                       if (product.count > 0) {
                         itemsSelected.add(product);
                       }
@@ -368,72 +352,3 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 }
 
-class CustomSearch extends SearchDelegate {
-  List<ProductModel> products = [
-    ProductModel(
-        id: 1,
-        code: '100.001',
-        name: 'СОРОЧКИ трикотаж/шелк',
-        remain: 5,
-        price: 5),
-  ];
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-          onPressed: () {
-            query = '';
-          },
-          icon: const Icon(Icons.clear))
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-        onPressed: () {
-          close(context, null);
-        },
-        icon: const Icon(Icons.arrow_back));
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    List<ProductModel> matchQueries = [];
-    for (var result in products) {
-      if (result.name.toLowerCase().contains(query.toLowerCase())) {
-        matchQueries.add(result);
-      }
-    }
-    return ListView.builder(
-        itemCount: matchQueries.length,
-        itemBuilder: (context, index) {
-          var result = matchQueries[index];
-          return ListTile(
-            title: Text(result.name),
-          );
-        });
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    List<ProductModel> matchQueries = [];
-    for (var result in products) {
-      if (result.name.toLowerCase().contains(query.toLowerCase())) {
-        matchQueries.add(result);
-      }
-    }
-    return ListView.builder(
-        itemCount: matchQueries.length,
-        itemBuilder: (context, index) {
-          var result = matchQueries[index];
-          return ListTile(
-            title: Text(result.name),
-            onTap: () {
-              close(context, result);
-            },
-          );
-        });
-  }
-}

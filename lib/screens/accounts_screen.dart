@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/account_provider.dart';
+import 'package:isoft/data/company_provider.dart';
+import 'package:isoft/data/db_helper.dart';
+import 'package:isoft/data/shared_prefs.dart';
 import 'package:isoft/models/account_model.dart';
+import 'package:provider/provider.dart';
 
 class AccountsScreen extends StatefulWidget {
   const AccountsScreen({Key? key}) : super(key: key);
@@ -12,6 +14,20 @@ class AccountsScreen extends StatefulWidget {
 }
 
 class _AccountsScreenState extends State<AccountsScreen> {
+  late Future<List<Account>> accounts;
+
+  Future<List<Account>> getAccounts() async {
+    return await DatabaseHelper.instance
+        .getAllAccounts(context.watch<CompanyProvider>().activeCompany.id);
+  }
+
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    accounts = getAccounts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,37 +44,140 @@ class _AccountsScreenState extends State<AccountsScreen> {
               onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          buildCard(
-              model:
-                  AccountModel(id: 1, code: '100.001', name: 'Azamat Astana')),
-          buildCard(
-              model: AccountModel(
-                  id: 2, code: '100.004', name: 'Daniyar Kyzyl-Kiya')),
-          buildCard(
-              model: AccountModel(
-                  id: 3, code: '100.005', name: 'Shurik Karaganda')),
-          buildCard(
-              model: AccountModel(
-                  id: 4, code: '100.006', name: 'Alibek Kostanay')),
-        ],
+      body: FutureBuilder<List<Account>>(
+        future: accounts,
+        initialData: [],
+        builder: (context, snapshot) {
+          final data = snapshot.data;
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            case ConnectionState.done:
+            default:
+              if (snapshot.hasData) {
+                if (data!.isEmpty) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.event_note_outlined,
+                          size: 144,
+                          color:
+                          Theme.of(context).primaryColor.withOpacity(0.3),
+                        ),
+                        Text(
+                          translation(context).no_data,
+                        )
+                      ],
+                    ),
+                  );
+                } else {
+                  return buildList(data);
+                }
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline_sharp,
+                        color: Theme.of(context).errorColor,
+                        size: 36,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(translation(context).error_occurred),
+                    ],
+                  ),
+                );
+              } else {
+                return Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.event_note_outlined,
+                        size: 144,
+                        color:
+                        Theme.of(context).primaryColor.withOpacity(0.3),
+                      ),
+                      Text(
+                        translation(context).no_data,
+                      )
+                    ],
+                  ),
+                );
+              }
+          }
+        },
       ),
     );
   }
 
-  Widget buildCard({required AccountModel model, Color color = Colors.white}) {
-    return Card(
-        color: color,
-        child: ListTile(
-          title: Text(model.name),
-          leading: const Icon(Icons.account_circle_outlined),
-          subtitle: Text(model.code),
-          onTap: () {
-            Navigator.of(context).pop({"account": model});
-          },
-        ));
+  Widget buildList(List<Account> items) {
+    return ListView.separated(
+        physics: BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(8),
+        itemBuilder: (context, index) {
+          return buildCard(item: items[index]);
+        },
+        separatorBuilder: (context, index) {
+          return Divider(
+            height: 0.5,
+            thickness: 1,
+          );
+        },
+        itemCount: items.length);
+  }
+
+  Widget buildCard({required Account item, Color color = Colors.white}) {
+    final isSelected = context.watch<AccountProvider>().activeAccount.id == item.id;
+
+    return ListTile(
+      dense: true,
+      onTap: () async{
+        await setActiveAccount(item.id);
+        context.read<AccountProvider>().setActiveAccount(item);
+        Navigator.of(context).pop({'account': item});
+      },
+      title: Text(item.name,
+          style: TextStyle(
+              fontWeight: FontWeight.w600, color: Theme.of(context).hintColor)),
+      subtitle: Text(
+        item.code,
+        style: TextStyle(color: Theme.of(context).hintColor),
+      ),
+      leading: CircleAvatar(
+        child: Icon(
+          Icons.account_circle_outlined,
+          color: Theme.of(context).hintColor,
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      trailing: Column(
+        children: [
+          Text(
+            translation(context).account_balance,
+            style: const TextStyle(fontSize: 12),
+          ),
+          const SizedBox(
+            height: 6,
+          ),
+          Text(
+            item.balance.toStringAsFixed(2),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      selected: isSelected,
+      selectedTileColor: Theme.of(context).highlightColor,
+    );
   }
 }
 

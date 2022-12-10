@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:isoft/data/company_provider.dart';
+import 'package:isoft/data/db_helper.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/models/company_model.dart';
 import 'package:isoft/models/navigation_item.dart';
-import 'package:isoft/models/navigation_provider.dart';
+import 'package:isoft/data/navigation_provider.dart';
 import 'package:isoft/routes/router_generator.dart';
 import 'package:provider/provider.dart';
-import '../l10n/language_constants.dart';
 
 class NavigationDrawer extends StatefulWidget {
   const NavigationDrawer({Key? key}) : super(key: key);
@@ -14,6 +17,17 @@ class NavigationDrawer extends StatefulWidget {
 
 class _NavigationDrawerState extends State<NavigationDrawer> {
   bool isSelectCompany = false;
+  late Future<List<Company>> companies;
+
+  Future<List<Company>> getCompanies() async {
+    return await DatabaseHelper.instance.getCompanies();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    companies = getCompanies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +38,26 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               title: 'Altynbek Bakirov', email: 'altynbek.bakirov@gmail.com'),
           Expanded(
             child: isSelectCompany
-                ? ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    children: [
-                        buildMenuItem(context,
-                            title: 'OcOO Company',
-                            icon: Icons.confirmation_num_outlined,
-                            item: NavigationItem.sales),
-                        buildMenuItem(context,
-                            title: 'OcOO Firm',
-                            icon: Icons.confirmation_num_outlined,
-                            item: NavigationItem.sales),
-                      ])
+                ? FutureBuilder<List<Company>>(
+                    initialData: [],
+                    future: companies,
+                    builder: (context, snapshot) {
+                      final data = snapshot.data;
+                      return ListView.separated(
+                        physics: BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(0),
+                        itemCount: data!.length,
+                        itemBuilder: (context, index) {
+                          return buildCompanyMenuItem(company: data[index]);
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return Divider(
+                            height: 1,
+                          );
+                        },
+                      );
+                    },
+                  )
                 : ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     children: [
@@ -134,6 +156,25 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
     );
   }
 
+  Widget buildCompanyMenuItem({required Company company}) {
+    final isSelected =
+        context.watch<CompanyProvider>().activeCompany.id == company.id;
+
+    return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(vertical: -1),
+      title: Text('(${company.nr}) - ${company.name}'),
+      trailing: isSelected ? Icon(Icons.task_alt_sharp) : null,
+      selected: isSelected,
+      onTap: isSelected
+          ? null
+          : () async {
+              context.read<CompanyProvider>().setActiveCompany(company);
+              await setActiveCompany(company.id);
+            },
+    );
+  }
+
   Widget buildMenuItem(BuildContext context,
       {required String title,
       IconData? icon,
@@ -141,7 +182,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       String? route,
       bool replaceRoute = false}) {
     final isSelected =
-        Provider.of<NavigationProvider>(context).navigationItem == item;
+        context.read<NavigationProvider>().navigationItem == item;
 
     return ListTile(
       dense: true,
@@ -152,8 +193,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               title,
             ),
       leading: icon == null
-          ? Text(title,
-              style: const TextStyle(fontWeight: FontWeight.w500))
+          ? Text(title, style: const TextStyle(fontWeight: FontWeight.w500))
           : Icon(
               icon,
               color: isSelected
@@ -166,8 +206,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           ? null
           : () {
               if (item != null) {
-                Provider.of<NavigationProvider>(context, listen: false)
-                    .setNavigationItem(item);
+                context.read<NavigationProvider>().setNavigationItem(item);
               }
               Navigator.of(context).pop();
               if (route != null) {
@@ -217,8 +256,8 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                   const SizedBox(
                     width: 10,
                   ),
-                  const Text(
-                    'OcOO FIRMA',
+                  Text(
+                    '(${Provider.of<CompanyProvider>(context, listen: false).activeCompany.nr}) - ${Provider.of<CompanyProvider>(context, listen: false).activeCompany.name}',
                     style: TextStyle(color: Colors.white),
                   ),
                   const Expanded(child: Text('')),

@@ -1,51 +1,54 @@
-class ProductModel {
+class Product {
   final int id;
   final String code;
   final String name;
-  String? groupCode;
-  String? markCode;
-  final double remain;
-  double price;
-  int count;
-  double newPrice;
+  final String group;
+  final String? unit;
+  final double? onHand;
+  final double? purchasePrice;
+  final double? salePrice;
 
-  ProductModel(
+  Product(
       {required this.id,
       required this.code,
       required this.name,
-      this.groupCode,
-      this.markCode,
-      required this.remain,
-      this.price = 0,
-      this.count = 0,
-      this.newPrice = 0});
+      required this.group,
+      this.unit,
+      this.onHand,
+      this.purchasePrice,
+      this.salePrice});
 
-  @override
-  String toString() {
-    return 'ProductModel{id: $id, code: $code, name: $name, groupCode: $groupCode, markCode: $markCode, remain: $remain, price: $price, count: $count, newPrice: $newPrice}';
-  }
+  Map<String, dynamic> toJson() => {
+        ProductFields.id: id,
+        ProductFields.code: code,
+        ProductFields.name: name,
+        ProductFields.group: group,
+        ProductFields.unit: unit,
+        ProductFields.onHand: onHand,
+        ProductFields.purchasePrice: purchasePrice,
+        ProductFields.salePrice: salePrice,
+      };
 
-  Map<String, Object?> toJson() {
-    Map<String, dynamic> map = {
-      'id': id,
-      'code': code,
-      'name': name,
-      'groupCode': groupCode,
-      'markCode': markCode,
-      'remain': remain,
-      'price': price
-    };
-    return map;
-  }
+  static Product fromJson(Map<String, dynamic> json) => Product(
+      id: json[ProductFields.id],
+      code: json[ProductFields.code],
+      name: json[ProductFields.name],
+      group: json[ProductFields.group] ?? '',
+      unit: json[ProductFields.unit],
+      onHand: json[ProductFields.onHand],
+      purchasePrice: json[ProductFields.purchasePrice],
+      salePrice: json[ProductFields.salePrice]);
+}
 
-  static ProductModel fromJson(Map<String, dynamic> json) {
-    return ProductModel(
-        id: json['id'],
-        code: json['code'],
-        name: json['name'],
-        groupCode: json['groupCode'],
-        markCode: json['markCode'],
-        remain: json['remain'],
-        price: json['price']);
-  }
+final String productTable = 'products';
+
+class ProductFields {
+  static final String id = 'id';
+  static final String code = 'code';
+  static final String name = 'name';
+  static final String group = 'group_code';
+  static final String unit = 'unit';
+  static final String onHand = 'on_hand';
+  static final String purchasePrice = 'purchase_price';
+  static final String salePrice = 'sale_price';
 }

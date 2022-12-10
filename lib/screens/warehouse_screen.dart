@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/company_provider.dart';
+import 'package:isoft/data/db_helper.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/data/ware_provider.dart';
+import 'package:isoft/models/warehouse_model.dart';
+import 'package:provider/provider.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({Key? key, this.warehouse}) : super(key: key);
@@ -12,20 +15,22 @@ class WarehouseScreen extends StatefulWidget {
 }
 
 class _WarehouseScreenState extends State<WarehouseScreen> {
-  late String currentWarehouse;
+  late Future<List<Ware>> wares;
 
   @override
-  void initState() {
-    super.initState();
-    setState(() {
-      currentWarehouse = widget.warehouse ?? '';
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    wares = getWares();
+  }
+
+  Future<List<Ware>> getWares() async {
+    return await DatabaseHelper.instance
+        .getWares(context.watch<CompanyProvider>().activeCompany.id);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: Text(translation(context).warehouse),
         actions: [
@@ -38,36 +43,128 @@ class _WarehouseScreenState extends State<WarehouseScreen> {
               onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          buildCard(code: "100.001", name: "Main"),
-          buildCard(
-            code: "200.001",
-            name: 'Warehouse Tunguch',
-          ),
-        ],
+      body: FutureBuilder<List<Ware>>(
+        future: wares,
+        initialData: [],
+        builder: (context, snapshot) {
+          final data = snapshot.data;
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            case ConnectionState.done:
+            default:
+              if (snapshot.hasData) {
+                if (data!.isEmpty) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.event_note_outlined,
+                          size: 144,
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.3),
+                        ),
+                        Text(
+                          translation(context).no_data,
+                        )
+                      ],
+                    ),
+                  );
+                } else {
+                  return buildList(data);
+                }
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline_sharp,
+                        color: Theme.of(context).errorColor,
+                        size: 36,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(translation(context).error_occurred),
+                    ],
+                  ),
+                );
+              } else {
+                return Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.event_note_outlined,
+                        size: 144,
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                      ),
+                      Text(
+                        translation(context).no_data,
+                      )
+                    ],
+                  ),
+                );
+              }
+          }
+        },
       ),
     );
   }
 
-  Widget buildCard(
-      {required String code,
-      required String name,
-      Color color = Colors.white}) {
-    return Card(
-        color: color,
-        child: RadioListTile<String>(
-          title: Text(name),
-          value: name,
-          groupValue: currentWarehouse,
-          onChanged: (String? value) {
-            setState(() {
-              currentWarehouse = value!;
-              Navigator.of(context).pop(currentWarehouse);
-            });
+  Widget buildList(List<Ware> items) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      child: ListView.separated(
+          physics: BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return buildCard(item: items[index]);
           },
-        ));
+          separatorBuilder: (context, index) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+            );
+          },
+          itemCount: items.length),
+    );
+  }
+
+  Widget buildCard({required Ware item, Color color = Colors.white}) {
+    final isSelected =
+        context.watch<WareProvider>().getActiveWare.id == item.id;
+
+    return ListTile(
+      onTap: () async {
+        await setActiveWare(item.id);
+        context.read<WareProvider>().setActiveWare(item);
+        Navigator.of(context).pop('${item.id} - ${item.name}');
+      },
+      title: Text('${item.nr} - ${item.name}',
+          style: TextStyle(
+              fontWeight: FontWeight.w600, color: Theme.of(context).hintColor)),
+      leading: CircleAvatar(
+        child: Icon(
+          Icons.warehouse_outlined,
+          color: Theme.of(context).bottomAppBarColor,
+        ),
+        backgroundColor: Theme.of(context).backgroundColor,
+      ),
+      trailing: isSelected
+          ? Icon(
+              Icons.task_alt_sharp,
+              color: Theme.of(context).primaryColor,
+            )
+          : null,
+      selected: isSelected,
+      // selectedTileColor: Theme.of(context).dividerColor,
+    );
   }
 }
 

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:isoft/models/navigation_provider.dart';
+import 'package:isoft/data/account_provider.dart';
+import 'package:isoft/data/company_provider.dart';
+import 'package:isoft/data/currency_provider.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/data/navigation_provider.dart';
+import 'package:isoft/data/ware_provider.dart';
 import 'package:isoft/routes/router_generator.dart';
 import 'package:provider/provider.dart';
-import 'l10n/language_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +32,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void didChangeDependencies() {
-    getLocale().then((value) => setLocale(value));
+    getSharedLocale().then((value) => setLocale(value));
     super.didChangeDependencies();
   }
 
@@ -36,7 +40,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: NavigationProvider()),
+        ChangeNotifierProvider(create: (context) => NavigationProvider()),
+        ChangeNotifierProvider(create: (context) => CompanyProvider()),
+        ChangeNotifierProvider(create: (context) => CurrencyProvider()),
+        ChangeNotifierProvider(create: (context) => WareProvider()),
+        ChangeNotifierProvider(create: (context) => AccountProvider()),
       ],
       child: MaterialApp(
           title: 'isoft',
@@ -46,8 +54,8 @@ class _MyAppState extends State<MyApp> {
           locale: _locale,
           theme: ThemeData(
             primarySwatch: Colors.blue,
-            textTheme: GoogleFonts.openSansTextTheme(
-                Theme.of(context).textTheme),
+            textTheme:
+                GoogleFonts.openSansTextTheme(Theme.of(context).textTheme),
           ),
           initialRoute: Routers.splash,
           routes: Routers.routers),

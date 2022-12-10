@@ -40,6 +40,9 @@
   "field_less_zero": "Değer sıfırdan büyük olmalıdır",
   "account_code": "Kod",
   "account_name": "Açıklama",
+  "account_debit": "Borç",
+  "account_credit": "Alacak",
+  "account_balance": "Bakiye",
   "add_products": "Ürün Ekle",
   "invoice_discounts": "İndirimler",
   "invoice_expenses": "Masraflar",
@@ -53,5 +56,10 @@
   "product_remain": "Kalan",
   "product_count": "Miktar",
   "product_total": "Tutar",
-  "no_data": "Veri yok"
+  "no_data": "Veri yok",
+  "error_occurred": "Hata oluştu",
+  "splash_data_loading": "Veri yükleniyor... Lütfen bekleyin",
+  "splash_params_loading": "Parametreler indiriliyor",
+  "splash_products_loading": "Ürünler indiriliyor",
+  "splash_accounts_loading": "Cari hesaplar indiriliyor"
 }

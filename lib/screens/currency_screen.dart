@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/company_provider.dart';
+import 'package:isoft/data/currency_provider.dart';
+import 'package:isoft/data/db_helper.dart';
+import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/models/currency_model.dart';
+import 'package:provider/provider.dart';
 
 class CurrencyScreen extends StatefulWidget {
   const CurrencyScreen({Key? key, this.currency}) : super(key: key);
@@ -12,18 +15,22 @@ class CurrencyScreen extends StatefulWidget {
 }
 
 class _CurrencyScreenState extends State<CurrencyScreen> {
-  late String currentCurrency;
+  late Future<List<Currency>> currencies;
+
+  Future<List<Currency>> getCurrencies() async {
+    return await DatabaseHelper.instance
+        .getAllCurrencies(context.watch<CompanyProvider>().activeCompany.id);
+  }
 
   @override
-  void initState() {
-    super.initState();
-    currentCurrency = widget.currency ?? '';
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currencies = getCurrencies();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: Text(translation(context).currency),
         actions: [
@@ -36,36 +43,132 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          buildCard(code: "usd", name: "Dollar USD"),
-          buildCard(
-            code: "com",
-            name: 'Kyrgyz COM',
-          ),
-        ],
+      body: FutureBuilder<List<Currency>>(
+        future: currencies,
+        initialData: [],
+        builder: (context, snapshot) {
+          final data = snapshot.data;
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            case ConnectionState.done:
+            default:
+              if (snapshot.hasData) {
+                if (data!.isEmpty) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.event_note_outlined,
+                          size: 144,
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.3),
+                        ),
+                        Text(
+                          translation(context).no_data,
+                        )
+                      ],
+                    ),
+                  );
+                } else {
+                  return buildList(data);
+                }
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline_sharp,
+                        color: Theme.of(context).errorColor,
+                        size: 36,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(translation(context).error_occurred),
+                    ],
+                  ),
+                );
+              } else {
+                return Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.event_note_outlined,
+                        size: 144,
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                      ),
+                      Text(
+                        translation(context).no_data,
+                      )
+                    ],
+                  ),
+                );
+              }
+          }
+        },
       ),
     );
   }
 
-  Widget buildCard(
-      {required String code,
-      required String name,
-      Color color = Colors.white}) {
-    return Card(
-        color: color,
-        child: RadioListTile<String>(
-          title: Text(name),
-          value: code,
-          groupValue: currentCurrency,
-          onChanged: (String? value) {
-            setState(() {
-              currentCurrency = value!;
-              Navigator.of(context).pop(currentCurrency);
-            });
+  Widget buildList(List<Currency> items) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      child: ListView.separated(
+          physics: BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return buildCard(item: items[index]);
           },
-        ));
+          separatorBuilder: (context, index) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+            );
+          },
+          itemCount: items.length),
+    );
+  }
+
+  Widget buildCard({required Currency item, Color color = Colors.white}) {
+    final isSelected =
+        context.watch<CurrencyProvider>().activeCurrency.id == item.id;
+
+    return ListTile(
+      onTap: () async {
+        await setActiveCurrency(item.id);
+        context.read<CurrencyProvider>().setActiveCurrency(item);
+        Navigator.of(context).pop('${item.curCode} - ${item.curName}');
+      },
+      title: Text(item.curCode,
+          style: TextStyle(
+              fontWeight: FontWeight.w600, color: Theme.of(context).hintColor)),
+      subtitle: Text(
+        item.curName,
+        style: TextStyle(color: Theme.of(context).hintColor),
+      ),
+      leading: CircleAvatar(
+        child: Icon(
+          Icons.currency_exchange_outlined,
+          color: Theme.of(context).bottomAppBarColor,
+        ),
+        backgroundColor: Theme.of(context).backgroundColor,
+      ),
+      trailing: isSelected
+          ? Icon(
+              Icons.task_alt_sharp,
+              color: Theme.of(context).primaryColor,
+            )
+          : null,
+      selected: isSelected,
+      // selectedTileColor: Theme.of(context).dividerColor,
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/shared_prefs.dart';
 
 class ProductsTransactionsPage extends StatefulWidget {
   const ProductsTransactionsPage({Key? key}) : super(key: key);

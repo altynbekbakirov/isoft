@@ -40,6 +40,9 @@
   "field_less_zero": "Значение меньше или равно 0",
   "account_code": "Код",
   "account_name": "Наименование",
+  "account_debit": "Дебет",
+  "account_credit": "Кредит",
+  "account_balance": "Баланс",
   "add_products": "Добавить товары",
   "invoice_discounts": "Скидки",
   "invoice_expenses": "Издержки",
@@ -53,5 +56,10 @@
   "product_remain": "Остаток",
   "product_count": "Количество",
   "product_total": "Итого",
-  "no_data": "Нет данных"
+  "no_data": "Нет данных",
+  "error_occurred": "Возникла ошибка",
+  "splash_data_loading": "Загрузка данных... Пожалуйста, подождите",
+  "splash_params_loading": "Загрузка параметров",
+  "splash_products_loading": "Загрузка товаров",
+  "splash_accounts_loading": "Загрузка контрагентов"
 }

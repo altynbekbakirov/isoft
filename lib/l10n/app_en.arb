@@ -40,6 +40,9 @@
   "field_less_zero": "Must be more than zero",
   "account_code": "Code",
   "account_name": "Name",
+  "account_debit": "Debit",
+  "account_credit": "Credit",
+  "account_balance": "Balance",
   "add_products": "Add Products",
   "invoice_discounts": "Discounts",
   "invoice_expenses": "Expenses",
@@ -53,5 +56,10 @@
   "product_remain": "Remain",
   "product_count": "Count",
   "product_total": "Sum",
-  "no_data": "No data"
+  "no_data": "No data",
+  "error_occurred": "Error occurred",
+  "splash_data_loading": "Data loading... Please wait",
+  "splash_params_loading": "Parameters downloading",
+  "splash_products_loading": "Products downloading",
+  "splash_accounts_loading": "Accounts downloading"
 }

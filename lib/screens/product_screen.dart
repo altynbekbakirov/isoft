@@ -4,6 +4,7 @@ import 'package:isoft/components/navigation_drawer.dart';
 import 'package:isoft/data/company_provider.dart';
 import 'package:isoft/data/db_helper.dart';
 import 'package:isoft/data/shared_prefs.dart';
+import 'package:isoft/models/cart_model.dart';
 import 'package:isoft/models/product_model.dart';
 import 'package:provider/provider.dart';
 
@@ -14,15 +15,20 @@ Future<List<Product>> getProducts(BuildContext context) async {
       .getAllProducts(context.watch<CompanyProvider>().activeCompany.id);
 }
 
-class ProductsPage extends StatefulWidget {
-  const ProductsPage({Key? key}) : super(key: key);
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({Key? key, required this.items}) : super(key: key);
+  final List<Cart> items;
 
   @override
-  State<ProductsPage> createState() => _ProductsPageState();
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductsPageState extends State<ProductsPage> {
-  DateTime timeBackPressed = DateTime.now();
+class _ProductScreenState extends State<ProductScreen> {
+  final formKey = GlobalKey<FormState>();
+  final productTotalController = TextEditingController();
+  final productCountController = TextEditingController();
+  final productPriceController = TextEditingController();
+
   late Future<List<Product>> products;
 
   void getStringList() async {
@@ -40,17 +46,8 @@ class _ProductsPageState extends State<ProductsPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        final difference = DateTime.now().difference(timeBackPressed);
-        final isExitWarning = difference >= const Duration(seconds: 2);
-        timeBackPressed = DateTime.now();
-        if (isExitWarning) {
-          Fluttertoast.showToast(
-              msg: translation(context).press_back_again_to_exit, fontSize: 14);
-          return false;
-        } else {
-          Fluttertoast.cancel();
-          return true;
-        }
+        Navigator.of(context).pop({"items": widget.items});
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -68,7 +65,6 @@ class _ProductsPageState extends State<ProductsPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
         body: FutureBuilder<List<Product>>(
           future: products,
           builder: (context, snapshot) {
@@ -174,7 +170,7 @@ class _ProductsPageState extends State<ProductsPage> {
       },
       separatorBuilder: (BuildContext context, int index) {
         return Divider(
-          height: 0.5,
+          height: 1,
           thickness: 1,
         );
       },
@@ -182,6 +178,16 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   Widget buildCard({required Product item, Color color = Colors.white}) {
+    int productCount = 0;
+    if (widget.items.length > 0) {
+      for (var cartItem in widget.items) {
+        if (item.id == cartItem.id) {
+          productCount = cartItem.count;
+          break;
+        }
+      }
+    }
+
     return ListTile(
       dense: true,
       title: Text(
@@ -216,9 +222,15 @@ class _ProductsPageState extends State<ProductsPage> {
           ),
         ],
       ),
-      leading: Icon(
-        Icons.photo_camera_outlined,
-      ),
+      leading: productCount > 0
+          ? CircleAvatar(
+              child: Text(
+                '${productCount}',
+                style: TextStyle(fontSize: 12),
+              ),
+              radius: 20,
+            )
+          : Text(''),
       trailing: Column(
         children: [
           Text(
@@ -236,6 +248,230 @@ class _ProductsPageState extends State<ProductsPage> {
           ),
         ],
       ),
+      onTap: () => showProductDialog(item),
+    );
+  }
+
+  void showProductDialog(Product item) {
+    bool isFound = false;
+
+    if (widget.items.length > 0) {
+      for (var cart in widget.items) {
+        if (cart.id == item.id) {
+          isFound = true;
+          productCountController.text = cart.count.toString();
+          break;
+        }
+      }
+    }
+
+    if (!isFound) {
+      productCountController.text = '0';
+    }
+
+    productPriceController.text = item.salePrice.toString();
+    productTotalController.text = (double.parse(productPriceController.text) *
+            int.parse(productCountController.text))
+        .toStringAsFixed(2);
+    productCountController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: productCountController.text.length,
+    );
+
+    showDialog<int>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return SingleChildScrollView(
+          child: AlertDialog(
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: item.code,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.code),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        labelText: translation(context).product_code,
+                        border: const OutlineInputBorder()),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: item.name,
+                    minLines: 1,
+                    maxLines: 5,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.notes),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        labelText: translation(context).product_name,
+                        border: const OutlineInputBorder()),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    style: const TextStyle(fontSize: 14),
+                    initialValue: item.onHand.toString(),
+                    decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.bookmark_border),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        labelText: translation(context).product_remain,
+                        border: const OutlineInputBorder()),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextFormField(
+                    controller: productPriceController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(fontSize: 14),
+                    validator: (value) {
+                      if (double.parse(value!) < 0) {
+                        return translation(context).field_less_zero;
+                      } else {
+                        return null;
+                      }
+                    },
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.monetization_on_outlined),
+                      labelText: translation(context).product_price,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 15),
+                    ),
+                    onChanged: (value) {
+                      double price = double.parse(value);
+                      int count = int.parse(productCountController.text);
+                      productTotalController.text =
+                          (price * count).toStringAsFixed(2);
+                    },
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextFormField(
+                    controller: productCountController,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 14),
+                    validator: (value) {
+                      if (int.parse(value!) < 0) {
+                        return translation(context).field_less_zero;
+                      } else {
+                        return null;
+                      }
+                    },
+                    decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.discount),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            productCountController.text = '0';
+                            productCountController.selection = TextSelection(
+                              baseOffset: 0,
+                              extentOffset: productCountController.text.length,
+                            );
+                            productTotalController.text = '0.00';
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        labelText: translation(context).product_count,
+                        border: const OutlineInputBorder()),
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        double price =
+                            double.parse(productPriceController.text);
+                        int count = int.parse(value);
+                        productTotalController.text =
+                            (price * count).toStringAsFixed(2);
+                      }
+                    },
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextFormField(
+                    controller: productTotalController,
+                    readOnly: true,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        labelText: translation(context).product_total,
+                        labelStyle:
+                            const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                child: Text(translation(context).cancel),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(); // Dismiss alert dialog
+                },
+              ),
+              ElevatedButton(
+                child: Text(
+                  translation(context).save,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    int count = int.parse(productCountController.text);
+                    if (isFound) {
+                      for (int i = 0; i < widget.items.length; i++) {
+                        if (widget.items[i].id == item.id) {
+                          if (count == 0) {
+                            setState(() {
+                              widget.items.removeAt(i);
+                            });
+                          } else {
+                            setState(() {
+                              widget.items[i].count = count;
+                            });
+                          }
+                          break;
+                        }
+                      }
+                    } else {
+                      final cart = Cart(
+                          id: item.id,
+                          code: item.code,
+                          name: item.name,
+                          price: item.salePrice ?? 0,
+                          count: count);
+                      setState(() {
+                        widget.items.add(cart);
+                      });
+                    }
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

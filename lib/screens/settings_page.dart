@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:isoft/components/navigation_drawer.dart';
-import 'package:isoft/l10n/language_constants.dart';
+import 'package:isoft/data/shared_prefs.dart';
 import 'package:isoft/main.dart';
 import 'package:isoft/routes/router_generator.dart';
 
@@ -169,7 +167,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    getLocale().then((value) {
+    getSharedLocale().then((value) {
       setState(() {
         currentLanguage = Language.languageList()
             .where((element) => element.languageCode == value.languageCode)
@@ -184,7 +182,8 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
       appBar: AppBar(
         title: Text(translation(context).choose_language),
       ),
-      body: Container(
+      body: buildList(Language.languageList()),
+      /*Container(
         margin: const EdgeInsets.all(20),
         padding: const EdgeInsets.all(20),
         width: double.infinity,
@@ -199,28 +198,73 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           children: Language.languageList()
               .map<RadioListTile<Language>>((lang) => RadioListTile<Language>(
-              value: lang,
-              title: Text(lang.name),
-            onChanged: (Language? language) async {
-              if (language != null) {
-                setState(() {
-                  currentLanguage = language;
-                });
-                Locale locale = await setLocale(language.languageCode);
-                MyApp.setLocale(context, locale);
-              }
-            },
-              groupValue: currentLanguage,
-
-          ))
+                    value: lang,
+                    title: Text(lang.name),
+                    onChanged: (Language? language) async {
+                      if (language != null) {
+                        setState(() {
+                          currentLanguage = language;
+                        });
+                        Locale locale =
+                            await setSharedLocale(language.languageCode);
+                        MyApp.setLocale(context, locale);
+                      }
+                    },
+                    groupValue: currentLanguage,
+                  ))
               .toList(),
-          /*RadioListTile(
-              title: Text("Hello world"),
-              value: 1,
-              groupValue: 1,
-              onChanged: (value) {}),*/
         ),
+      ),*/
+    );
+  }
+
+  Widget buildList(List<Language> items) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      child: ListView.separated(
+          physics: BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return buildCard(item: items[index]);
+          },
+          separatorBuilder: (context, index) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+            );
+          },
+          itemCount: items.length),
+    );
+  }
+
+  Widget buildCard({required Language item, Color color = Colors.white}) {
+    final isSelected = currentLanguage ==
+        Language.languageList()
+            .where((element) => element.languageCode == item.languageCode)
+            .first;
+
+    return ListTile(
+      onTap: () async {
+        setState(() {
+          currentLanguage = item;
+        });
+        Locale locale = await setSharedLocale(item.languageCode);
+        MyApp.setLocale(context, locale);
+      },
+      title: Text('${item.name}',
+          style: TextStyle(
+              fontWeight: FontWeight.w600, color: Theme.of(context).hintColor)),
+      leading: CircleAvatar(
+        child: Text('${item.flag}'),
+        backgroundColor: Theme.of(context).backgroundColor,
       ),
+      trailing: isSelected
+          ? Icon(
+              Icons.task_alt_sharp,
+              color: Theme.of(context).primaryColor,
+            )
+          : null,
+      selected: isSelected,
+      // selectedTileColor: Theme.of(context).dividerColor,
     );
   }
 }
