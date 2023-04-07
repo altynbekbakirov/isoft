@@ -7,10 +7,9 @@ import 'package:isoft/data/shared_prefs.dart';
 import 'package:isoft/data/ware_provider.dart';
 import 'package:isoft/models/account_model.dart';
 import 'package:isoft/models/cart_model.dart';
+import 'package:isoft/screens/accounts/accounts_screen.dart';
 import 'package:isoft/screens/currency_screen.dart';
-import 'package:isoft/screens/product_screen.dart';
-import 'package:isoft/screens/products_screen.dart';
-import 'package:isoft/screens/accounts_screen.dart';
+import 'package:isoft/screens/products/product_screen.dart';
 import 'package:isoft/screens/warehouse_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -53,7 +52,7 @@ class _SalesInvoicesPageState extends State<SalesInvoicesPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: Container(
           alignment: Alignment.center,
           child: Column(

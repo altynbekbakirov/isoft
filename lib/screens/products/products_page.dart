@@ -68,7 +68,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: FutureBuilder<List<Product>>(
           future: products,
           builder: (context, snapshot) {

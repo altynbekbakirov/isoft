@@ -3,14 +3,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:isoft/components/navigation_drawer.dart';
 import 'package:isoft/data/shared_prefs.dart';
 
-class ProductsOpenSlipsPage extends StatefulWidget {
-  const ProductsOpenSlipsPage({Key? key}) : super(key: key);
+class SalesOrdersPage extends StatefulWidget {
+  const SalesOrdersPage({Key? key}) : super(key: key);
 
   @override
-  State<ProductsOpenSlipsPage> createState() => _ProductsOpenSlipsPageState();
+  State<SalesOrdersPage> createState() => _SalesOrdersPageState();
 }
 
-class _ProductsOpenSlipsPageState extends State<ProductsOpenSlipsPage> {
+class _SalesOrdersPageState extends State<SalesOrdersPage> {
   DateTime timeBackPressed = DateTime.now();
 
   @override
@@ -31,7 +31,10 @@ class _ProductsOpenSlipsPageState extends State<ProductsOpenSlipsPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(translation(context).open_slips),
+          title: Text(
+            translation(context).sales_orders,
+            style: const TextStyle(fontSize: 18),
+          ),
           actions: [
             IconButton(
                 onPressed: () {
@@ -42,7 +45,7 @@ class _ProductsOpenSlipsPageState extends State<ProductsOpenSlipsPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: Container(
           alignment: Alignment.center,
           child: Column(
@@ -61,7 +64,7 @@ class _ProductsOpenSlipsPageState extends State<ProductsOpenSlipsPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {},
-          child: const Icon(Icons.add_outlined),
+          child: const Icon(Icons.add_outlined,),
         ),
       ),
     );

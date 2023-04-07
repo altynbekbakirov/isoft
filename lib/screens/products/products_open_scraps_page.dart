@@ -3,14 +3,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:isoft/components/navigation_drawer.dart';
 import 'package:isoft/data/shared_prefs.dart';
 
-class SalesOrdersPage extends StatefulWidget {
-  const SalesOrdersPage({Key? key}) : super(key: key);
+class ProductsOpenScrapsPage extends StatefulWidget {
+  const ProductsOpenScrapsPage({Key? key}) : super(key: key);
 
   @override
-  State<SalesOrdersPage> createState() => _SalesOrdersPageState();
+  State<ProductsOpenScrapsPage> createState() => _ProductsOpenScrapsPageState();
 }
 
-class _SalesOrdersPageState extends State<SalesOrdersPage> {
+class _ProductsOpenScrapsPageState extends State<ProductsOpenScrapsPage> {
   DateTime timeBackPressed = DateTime.now();
 
   @override
@@ -31,10 +31,7 @@ class _SalesOrdersPageState extends State<SalesOrdersPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            translation(context).sales_orders,
-            style: const TextStyle(fontSize: 18),
-          ),
+          title: Text(translation(context).scrap_slips),
           actions: [
             IconButton(
                 onPressed: () {
@@ -45,7 +42,7 @@ class _SalesOrdersPageState extends State<SalesOrdersPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: Container(
           alignment: Alignment.center,
           child: Column(
@@ -64,7 +61,7 @@ class _SalesOrdersPageState extends State<SalesOrdersPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {},
-          child: const Icon(Icons.add_outlined,),
+          child: const Icon(Icons.add_outlined),
         ),
       ),
     );

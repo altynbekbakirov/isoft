@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
         }
       },
       child: Scaffold(
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         appBar: AppBar(
           title: Text(translation(context).home),
         ),

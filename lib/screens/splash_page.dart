@@ -77,8 +77,8 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    getData();
-    _navigateToHome();
+    // getData().then((value) => _navigateToHome());
+    Future.delayed(Duration(seconds: 3)).then((value) => _navigateToHome());
   }
 
   @override
@@ -115,9 +115,6 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future _navigateToHome() async {
-    await Future.delayed(
-      Duration(seconds: 10),
-    );
     await Navigator.of(context).pushReplacementNamed(Routers.home);
   }
 }

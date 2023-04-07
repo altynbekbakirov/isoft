@@ -1,16 +1,16 @@
-import 'package:isoft/screens/accounts_page.dart';
+import 'package:isoft/screens/accounts/accounts_page.dart';
 import 'package:isoft/screens/home_page.dart';
 import 'package:isoft/screens/login_page.dart';
-import 'package:isoft/screens/product_transactions_page.dart';
-import 'package:isoft/screens/products_open_scraps_page.dart';
-import 'package:isoft/screens/products_open_slips_page.dart';
-import 'package:isoft/screens/products_page.dart';
+import 'package:isoft/screens/products/product_transactions_page.dart';
+import 'package:isoft/screens/products/products_open_scraps_page.dart';
+import 'package:isoft/screens/products/products_open_slips_page.dart';
+import 'package:isoft/screens/products/products_page.dart';
 import 'package:isoft/screens/purchases_invoices_page.dart';
 import 'package:isoft/screens/purchases_orders_page.dart';
 import 'package:isoft/screens/safe_transactions_page.dart';
-import 'package:isoft/screens/sales_invoices_page.dart';
-import 'package:isoft/screens/sales_orders_page.dart';
-import 'package:isoft/screens/sales_returns_page.dart';
+import 'package:isoft/screens/sales/sales_invoices_page.dart';
+import 'package:isoft/screens/sales/sales_orders_page.dart';
+import 'package:isoft/screens/sales/sales_returns_page.dart';
 import 'package:isoft/screens/settings_page.dart';
 import 'package:isoft/screens/splash_page.dart';
 

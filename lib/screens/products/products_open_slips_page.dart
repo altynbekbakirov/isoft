@@ -3,14 +3,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:isoft/components/navigation_drawer.dart';
 import 'package:isoft/data/shared_prefs.dart';
 
-class SalesReturnsPage extends StatefulWidget {
-  const SalesReturnsPage({Key? key}) : super(key: key);
+class ProductsOpenSlipsPage extends StatefulWidget {
+  const ProductsOpenSlipsPage({Key? key}) : super(key: key);
 
   @override
-  State<SalesReturnsPage> createState() => _SalesReturnsPageState();
+  State<ProductsOpenSlipsPage> createState() => _ProductsOpenSlipsPageState();
 }
 
-class _SalesReturnsPageState extends State<SalesReturnsPage> {
+class _ProductsOpenSlipsPageState extends State<ProductsOpenSlipsPage> {
   DateTime timeBackPressed = DateTime.now();
 
   @override
@@ -31,10 +31,7 @@ class _SalesReturnsPageState extends State<SalesReturnsPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            translation(context).sales_returns,
-            style: const TextStyle(fontSize: 18),
-          ),
+          title: Text(translation(context).open_slips),
           actions: [
             IconButton(
                 onPressed: () {
@@ -45,7 +42,7 @@ class _SalesReturnsPageState extends State<SalesReturnsPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: Container(
           alignment: Alignment.center,
           child: Column(

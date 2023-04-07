@@ -50,7 +50,7 @@ class _PurchasesOrdersPageState extends State<PurchasesOrdersPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: Container(
           alignment: Alignment.center,
           child: Column(

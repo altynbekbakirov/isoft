@@ -58,7 +58,7 @@ class _AccountsPageState extends State<AccountsPage> {
                 onPressed: () {}, icon: const Icon(Icons.filter_list_outlined)),
           ],
         ),
-        drawer: NavigationDrawer(),
+        drawer: NavigationDraw(),
         body: FutureBuilder<List<Account>>(
           future: accounts,
           initialData: [],

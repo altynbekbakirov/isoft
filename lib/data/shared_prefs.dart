@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -79,7 +81,7 @@ Future<Locale> setSharedLocale(String languageCode) async {
 
 Future<Locale> getSharedLocale() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String languageCode = prefs.getString(langCode) ?? english;
+  String languageCode = prefs.getString(langCode) ?? getDeviceLocale();
   return _locale(languageCode);
 }
 
@@ -98,6 +100,17 @@ Locale _locale(String languageCode) {
 
 AppLocalizations translation(BuildContext context) {
   return AppLocalizations.of(context)!;
+}
+
+String getDeviceLocale() {
+  final String deviceLocale = Platform.localeName;
+  final String locale = deviceLocale.substring(0, 2);
+
+  if (locale == 'en' || locale == 'ru' || locale == 'tr') {
+    return locale;
+  } else {
+    return 'en';
+  }
 }
 
 class Language extends Equatable {

@@ -8,7 +8,7 @@ import 'package:isoft/models/period_model.dart';
 import 'package:isoft/models/product_model.dart';
 import 'package:isoft/models/warehouse_model.dart';
 
-final String endPoint = 'http://192.168.1.104:8080';
+final String endPoint = 'http://192.168.1.105:8080';
 
 class ApiServices {
   static Future<List<Company>> getCompany() async {

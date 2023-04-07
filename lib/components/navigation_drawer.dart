@@ -8,14 +8,14 @@ import 'package:isoft/data/navigation_provider.dart';
 import 'package:isoft/routes/router_generator.dart';
 import 'package:provider/provider.dart';
 
-class NavigationDrawer extends StatefulWidget {
-  const NavigationDrawer({Key? key}) : super(key: key);
+class NavigationDraw extends StatefulWidget {
+  const NavigationDraw({Key? key}) : super(key: key);
 
   @override
-  State<NavigationDrawer> createState() => _NavigationDrawerState();
+  State<NavigationDraw> createState() => _NavigationDrawState();
 }
 
-class _NavigationDrawerState extends State<NavigationDrawer> {
+class _NavigationDrawState extends State<NavigationDraw> {
   bool isSelectCompany = false;
   late Future<List<Company>> companies;
 
